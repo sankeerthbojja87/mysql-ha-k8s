@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-shard-0
+spec:
+  serviceName: mysql-shard-0
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-shard-0
+  template:
+    metadata:
+      labels:
+        app: mysql-shard-0
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.4
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-shard-secret
+                  key: root-password
+            - name: MYSQL_DATABASE
+              value: appdb
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-shard-0
+spec:
+  selector:
+    app: mysql-shard-0
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-shard-1
+spec:
+  serviceName: mysql-shard-1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-shard-1
+  template:
+    metadata:
+      labels:
+        app: mysql-shard-1
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.4
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-shard-secret
+                  key: root-password
+            - name: MYSQL_DATABASE
+              value: appdb
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-shard-1
+spec:
+  selector:
+    app: mysql-shard-1
+  ports:
+    - port: 3306
+      targetPort: 3306
+

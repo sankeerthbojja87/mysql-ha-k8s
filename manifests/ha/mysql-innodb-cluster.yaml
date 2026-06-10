@@ -1,0 +1,26 @@
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: mysql-ha
+spec:
+  secretName: mysql-ha-secret
+  tlsUseSelfSigned: true
+  instances: 3
+
+  router:
+    instances: 1
+
+  datadirVolumeClaimTemplate:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+
+  mycnf: |
+    [mysqld]
+    max_connections=150
+    slow_query_log=ON
+    long_query_time=1
+    log_output=TABLE
+

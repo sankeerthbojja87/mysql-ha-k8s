@@ -1,0 +1,6 @@
+.DS_Store
+*.sql
+*.dump
+*.log
+tmp/
+

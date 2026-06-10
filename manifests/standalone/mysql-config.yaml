@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  custom.cnf: |
+    [mysqld]
+    server_id=1
+
+    slow_query_log=ON
+    long_query_time=1
+    log_output=TABLE
+
+    log_bin=mysql-bin
+    binlog_expire_logs_seconds=604800
+
+    max_connections=100
+    innodb_buffer_pool_size=256M
+    innodb_flush_log_at_trx_commit=1
+
+    skip_name_resolve=ON
+
