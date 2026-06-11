@@ -1,4 +1,4 @@
-# MySQL HA on Kubernetes Lab
+# MySQL HA on Kubernetes
 
 Hands-on MySQL platform engineering lab using kind, Kubernetes, standalone MySQL, MySQL Operator, InnoDB Cluster, MySQL Router, backups, restore, performance triage, upgrades, and sharding concepts.
 
