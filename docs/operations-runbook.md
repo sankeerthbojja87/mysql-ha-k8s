@@ -98,6 +98,47 @@ kubectl patch innodbcluster mysql-ha --type=merge -p '{"spec":{"router":{"instan
 kubectl patch innodbcluster mysql-ha --type=merge -p '{"spec":{"router":{"instances":1}}}'
 ```
 
+## Rolling Config Update
+
+See [rolling-update-config-change.md](rolling-update-config-change.md) for the full practiced scenario.
+
+Quick flow:
+
+```bash
+kubectl patch innodbcluster mysql-ha \
+  --type=merge \
+  -p '{"spec":{"mycnf":"[mysqld]\nmax_connections=200\nslow_query_log=ON\nlong_query_time=1\nlog_output=TABLE\n"}}'
+
+kubectl get innodbcluster mysql-ha -o yaml | grep -A8 "mycnf:"
+
+for pod in mysql-ha-0 mysql-ha-1 mysql-ha-2; do
+  echo "==== $pod ===="
+  kubectl exec -it $pod -c mysql -- \
+    mysql -uroot -p'RootPass-MySQL-HA-Lab-123!' \
+    -e "SHOW VARIABLES LIKE 'max_connections';"
+done
+```
+
+If runtime does not match desired state, trace the config source:
+
+```bash
+kubectl exec -it mysql-ha-0 -c mysql -- \
+  sh -c "grep -R \"max_connections\" /etc/my.cnf /etc/mysql /etc/my.cnf.d /var/lib/mysql 2>/dev/null | head -50"
+
+kubectl get configmap mysql-ha-initconf -o yaml | grep -A10 "99-extra.cnf"
+```
+
+For lab-only correction of the generated ConfigMap:
+
+```bash
+kubectl patch configmap mysql-ha-initconf \
+  --type merge \
+  -p '{"data":{"99-extra.cnf":"# Additional user configurations taken from spec.mycnf in InnoDBCluster.\n# Do not edit directly.\n[mysqld]\nmax_connections=200\nslow_query_log=ON\nlong_query_time=1\nlog_output=TABLE\n"}}'
+
+kubectl rollout restart statefulset/mysql-ha
+kubectl rollout status statefulset/mysql-ha
+```
+
 ## Finalizer Cleanup Pattern
 
 Use only when a namespace is stuck in `Terminating`.
@@ -112,4 +153,3 @@ kubectl patch pod mysql-ha-2 -n mysql-ha --type=merge -p '{"metadata":{"finalize
 kubectl delete pod mysql-ha-0 mysql-ha-1 mysql-ha-2 -n mysql-ha --grace-period=0 --force
 kubectl delete pvc --all -n mysql-ha --grace-period=0 --force
 ```
-

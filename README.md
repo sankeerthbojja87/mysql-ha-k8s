@@ -53,6 +53,7 @@ docs/
   innodb-cluster-ha.md
   backup-restore.md
   sharding-notes.md
+  rolling-update-config-change.md
   interview-cheatsheet.md
 scripts/
   validate-standalone.sh
@@ -127,4 +128,3 @@ Full reset:
 ```bash
 kind delete cluster --name mysql-platform
 ```
-

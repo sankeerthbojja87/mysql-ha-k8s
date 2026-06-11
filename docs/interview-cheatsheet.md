@@ -28,7 +28,10 @@ I capture the SQL, inspect `EXPLAIN` or `EXPLAIN ANALYZE`, check slow query logs
 
 For logical backups, I use `mysqldump --single-transaction` for InnoDB consistency and include routines, triggers, and events. In production, I validate restores regularly and track backup duration, failure rate, retention, encryption, and RTO.
 
+## Rolling Config Update
+
+I tested a config rollout by changing `max_connections` from 150 to 200. The CR desired state changed, but runtime did not. I traced the active MySQL config to `/etc/my.cnf.d/99-extra.cnf`, then to the operator-generated `mysql-ha-initconf` ConfigMap. After correcting the generated config in the lab and rolling the StatefulSet, I validated all members had `max_connections=200`.
+
 ## Sharding
 
 Standard MySQL does not provide MongoDB-style native sharding. MySQL sharding is usually application-level or middleware-managed using a key such as tenant ID or customer ID. For production-scale sharding, I would evaluate Vitess for routing, topology, resharding, and operational workflows.
-
