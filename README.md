@@ -54,7 +54,7 @@ docs/
   backup-restore.md
   sharding-notes.md
   rolling-update-config-change.md
-  interview-cheatsheet.md
+  scale-out-innodb-cluster.md
 scripts/
   validate-standalone.sh
   validate-ha.sh

@@ -139,6 +139,38 @@ kubectl rollout restart statefulset/mysql-ha
 kubectl rollout status statefulset/mysql-ha
 ```
 
+## Scale Out InnoDB Cluster
+
+See [scale-out-innodb-cluster.md](scale-out-innodb-cluster.md) for the full 3-node to 5-node scale-out practice.
+
+Quick flow:
+
+```bash
+kubectl get innodbcluster mysql-ha -o wide
+kubectl get pods -o wide
+kubectl get pvc
+
+kubectl patch innodbcluster mysql-ha \
+  --type=merge \
+  -p '{"spec":{"instances":5}}'
+
+kubectl get pods -w
+```
+
+Validate:
+
+```bash
+kubectl get innodbcluster mysql-ha -o wide
+kubectl get pvc
+
+kubectl exec -it mysql-ha-0 -c mysql -- \
+  mysql -uroot -p'RootPass-MySQL-HA-Lab-123!' \
+  -e "
+SELECT MEMBER_HOST, MEMBER_ROLE, MEMBER_STATE, MEMBER_VERSION
+FROM performance_schema.replication_group_members;
+"
+```
+
 ## Finalizer Cleanup Pattern
 
 Use only when a namespace is stuck in `Terminating`.
